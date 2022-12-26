@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-web-app/trace"
 	"log"
 	"net/http"
 
@@ -12,6 +13,7 @@ type room struct {
 	join    chan *client
 	leave   chan *client
 	clients map[*client]bool
+	tracer  trace.Tracer
 }
 
 func newRoom() *room {
@@ -28,20 +30,24 @@ func (r *room) run() {
 		select {
 		case client := <-r.join:
 			r.clients[client] = true
+			r.tracer.Trace("Welcome new comer!")
 
 		case client := <-r.leave:
 			delete(r.clients, client)
 			close(client.send)
+			r.tracer.Trace("GoodBye client.")
 
 		case msg := <-r.forward:
 			for client := range r.clients {
 				select {
 				case client.send <- msg:
 					// send msg
+					r.tracer.Trace("The message was sent.")
 				default:
 					// fail to send msg
 					delete(r.clients, client)
 					close(client.send)
+					r.tracer.Trace("Fail to send the message.")
 				}
 			}
 		}
