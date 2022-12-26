@@ -2,11 +2,9 @@ package main
 
 import (
 	"flag"
-	"go-web-app/trace"
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"sync"
 )
@@ -29,7 +27,7 @@ func main() {
 	flag.Parse()
 
 	r := newRoom()
-	r.tracer = trace.New(os.Stdout)
+	// r.tracer = trace.New(os.Stdout)
 	http.Handle("/", &templateHandler{filename: "chat.html"})
 	http.Handle("/room", r)
 
